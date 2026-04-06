@@ -1,27 +1,37 @@
-import React from 'react';
-import Dashboard from './components/Dashboard';
+import React, { useState } from "react";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+
+const USERS = {};
 
 function App() {
-  return (
-    <div className="app-container">
-      <header>
-        <h1>⏱ Time-Tracker</h1>
-        <h2>ACTIVITY</h2>
-      </header>
-      <Dashboard />
+  const [user, setUser] = useState(null);
 
-      <style>{`
-        .app-container {
-          background: #0f172a;
-          min-height: 100vh;
-          color: white;
-          padding: 50px 20px;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          text-align: center;
-        }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; color: #f8fafc; }
-        p { color: #94a3b8; margin-bottom: 30px; }
-      `}</style>
+  const login = (email, pass) => {
+    if (!USERS[email] || USERS[email].pass !== pass) return "Invalid email or password";
+    setUser(USERS[email]);
+    return null;
+  };
+
+  const register = (name, email, pass) => {
+    if (USERS[email]) return "Account already exists";
+    USERS[email] = {
+      name,
+      pass,
+      timers: ["DSA", "GYM", "COLLEGE"].map((n, i) => ({ id: i+1, name: n, elapsed: 0 })),
+      nextId: 4,
+    };
+    setUser(USERS[email]);
+    return null;
+  };
+
+  return (
+    <div style={{ background: "#0d1117", minHeight: "100vh", color: "white", fontFamily: "sans-serif", padding: "2rem", textAlign: "center" }}>
+      <h1 style={{ marginBottom: "1.5rem" }}>⏱ Time Tracker</h1>
+      {user
+        ? <Dashboard user={user} onLogout={() => setUser(null)} />
+        : <Login onLogin={login} onRegister={register} />
+      }
     </div>
   );
 }
