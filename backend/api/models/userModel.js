@@ -30,18 +30,18 @@ class UserModel{
   static async createUser(userData){
     try{
       const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS)
-      const userDataWithHash = {
-        ...userData,
-        password: hashedPassword
+      const userDataWithHash = { 
+        email: userData.email,
+      name: userData.name,
+      password_hash: hashedPassword
       }
-      const [newUser] = await db('users').insert(userDataWithHash).returning('id, email, name')
+      const [newUser] = await db('users').insert(userDataWithHash).returning(['id', 'email', 'name'])
       return newUser
     }catch(error){
       if(error.code === 'ER_DUP_ENTRY' || error.code === '23505'){
         throw new Error('Email already exists')
       }
       throw error
-    }
     }
   }
 
@@ -57,10 +57,26 @@ class UserModel{
       if(!user){
         throw new Error('User not found')
       }
-      const isMatch = await bcrypt.compare(password, user.password)
+      const isMatch = await bcrypt.compare(password, user.password_hash)
       return isMatch
     }catch(error){
       throw error
     }
+  }
+
+  /**
+   * Get a user by their email.
+   * @param {string} email - The email of the user to retrieve
+   * @returns {Promise<User | null>} - The user object if found, or null if not found.
+   *
+   */ 
+  static async getUserByEmail(email){
+    try{
+      const user = await db('users').where({ email }).first('id', 'email', 'name')
+      return user || null
+    }catch(error){
+      throw error
+    }
+  }
 }
-}
+module.exports = UserModel;
