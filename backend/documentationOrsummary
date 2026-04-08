@@ -1,0 +1,97 @@
+Backend Structure (Key Files)
+🔹 /api/models/
+userModel.js
+→ Handles user-related DB operations (create user, find user, etc.)
+timerModel.js
+→ Handles timer and session-related queries
+
+🔹 /api/controllers/
+(Functions that handle API logic)
+Auth Controller
+registerUser() → Creates new user (with hashed password)
+loginUser() → Verifies credentials and returns JWT token
+Timer Controller
+createTimer() → Creates a new timer
+startTimer() → Starts a session (records start time)
+pauseTimer() → Ends session and calculates duration
+getTotalTime() → Returns total time for a timer
+getTodayTime() → Returns today's usage
+getWeeklyTime() → Returns last 7 days usage
+
+🔹 /api/routes/
+auth.routes.js → /auth/register, /auth/login
+timer.routes.js → All timer-related endpoints
+
+🔹 /db/
+migrations/
+make_users_table.js → Users table
+make_timers_table.js → Timers + sessions schema
+index.js → Knex DB connection (singleton pattern)
+
+🔹 Root Files
+server.js → Entry point (Express app setup, routes, middleware)
+knexfile.js → DB configuration
+
+
+Timer Logic (Core Feature)
+Instead of directly storing time, the system uses sessions:
+ Start → stores start_time
+ Pause → stores end_time and calculates duration
+ Total time → sum of all session durations
+
+
+API DEMO (Step-by-Step)
+1️ Register User
+POST /auth/register
+{
+  "name": "Aum",
+  "email": "aum123@test.com",
+  "password": "123456"
+}
+
+
+️2 Login
+POST /auth/login
+{
+  "email": "aum123@test.com",
+  "password": "123456"
+}
+
+➡️ Returns:
+{
+  "user": {...},
+  "token": "JWT_TOKEN"
+}
+
+
+3️ Create Timer
+POST /timers
+Headers:
+Authorization: Bearer <token>
+
+{
+  "name": "DSA Study"
+}
+
+
+4️ Start Timer
+POST /timers/:id/start
+ Creates a session with start time
+
+5 Pause Timer
+POST /timers/:id/pause
+ Ends session and calculates duration
+
+️6 Get Total Time
+GET /timers/:id/total
+{
+  "total_seconds": 45,
+  "formatted": "0h 0m 45s"
+}
+
+
+️7 Daily & Weekly Stats
+/timers/:id/today
+/timers/:id/weekly
+
+
